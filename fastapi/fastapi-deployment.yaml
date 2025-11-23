@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: spartron12/fastapi-app:latest
+        ports:
+        - containerPort: 8000  # Cambia si tu FastAPI corre en otro puerto
+        env:
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: "http://host.minikube.internal:9000"
+            - name: AWS_ACCESS_KEY_ID
+              value: "admin"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "supersecret"
