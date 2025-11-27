@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: spartron12/fastapi-house:v5
+        image: spartron12/fastapi-house:v6
         ports:
         - containerPort: 8000  
         env:
