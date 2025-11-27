@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: streamlit
-        image: spartron12/streamlit-app:latest   # cámbialo por tu imagen real
+        image: streamlit-house:latest   # cámbialo por tu imagen real
         ports:
         - containerPort: 8501
 ---
