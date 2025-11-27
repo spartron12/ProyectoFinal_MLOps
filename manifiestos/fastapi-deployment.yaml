@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: spartron12/fastapi-app:latest
+        image: spartron12/fastapi-house:v2
         ports:
         - containerPort: 8000  # Cambia si tu FastAPI corre en otro puerto
         env:
         - name: MLFLOW_S3_ENDPOINT_URL
-          value: "http://host.minikube.internal:9000"
+          value: "http://10.43.100.83:9000"
         - name: AWS_ACCESS_KEY_ID
           value: "admin"
         - name: AWS_SECRET_ACCESS_KEY
