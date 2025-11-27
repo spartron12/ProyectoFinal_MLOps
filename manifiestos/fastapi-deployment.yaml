@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: spartron12/fastapi-house:v4
+        image: spartron12/fastapi-house:v5
         ports:
-        - containerPort: 8000  # Cambia si tu FastAPI corre en otro puerto
+        - containerPort: 8000  
         env:
         - name: MLFLOW_S3_ENDPOINT_URL
           value: "http://10.43.100.83:9000"
