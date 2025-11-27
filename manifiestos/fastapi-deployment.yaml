@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: spartron12/fastapi-house:v2
+        image: spartron12/fastapi-house:v3
         ports:
         - containerPort: 8000  # Cambia si tu FastAPI corre en otro puerto
         env:
