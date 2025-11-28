@@ -30,7 +30,7 @@ def encode_state(selected_state):
 # ---------------------------------------------------
 # Interfaz Streamlit
 # ---------------------------------------------------
-st.title("Predicción de Precio de Casas")
+st.title("🏡 Predicción de Precio de Casas - Cambio Demostraición en vivo")
 
 st.header("Ingrese la información de la propiedad:")
 
@@ -53,16 +53,16 @@ states = [
 ]
 state = st.selectbox("Estado", states)
 
-# Campos adicionales opcionales
+# Campos adicionales requeridos por FastAPI
 price_per_sqft = st.number_input("Precio por pie cuadrado (opcional)", value=0.0)
-lot_per_sqft = st.number_input("Precio por pie de lote (opcional)", value=0.0)
+lot_per_sqft = st.number_input("Precio por pie cuadrado del lote (opcional)", value=0.0)
 
 # ---------------------------------------------------
 # Botón de predicción
 # ---------------------------------------------------
 if st.button("Predecir precio"):
-    
-    # Crear diccionario base
+
+    # Crear diccionario base EXACTO que FastAPI espera
     input_dict = {
         "bed": bed,
         "bath": bath,
@@ -72,19 +72,24 @@ if st.button("Predecir precio"):
         "lot_per_sqft": lot_per_sqft,
     }
 
-    # Agregar one-hot de estado
+    # Agregar one-hot del estado
     input_dict.update(encode_state(state))
 
+    st.write("📤 Datos enviados al API:")
+    st.json(input_dict)
+
+    # ---------------------------------------------------
+    # Llamar a la API FastAPI
+    # ---------------------------------------------------
     try:
         response = requests.post(API_URL, json=input_dict)
 
         if response.status_code == 200:
             result = response.json()
-            st.success(f"Precio estimado: ${result['predicted_price']:,.2f}")
-            st.info(f"Mensaje: {result['message']}")
-
+            st.success(f"💰 Precio estimado: ${result['predicted_price']:,.2f}")
+            st.info(result["message"])
         else:
-            st.error(f"Error en la API: {response.text}")
+            st.error(f"❌ Error en la API: {response.text}")
 
     except Exception as e:
-        st.error(f"Error de conexión: {e}")
+        st.error(f"❌ Error de conexión con el API: {e}")

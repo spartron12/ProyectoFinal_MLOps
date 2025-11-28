@@ -49,7 +49,7 @@ model = None
 model_loaded_at = None
 
 # -----------------------------------------------------------
-# Pydantic – Features de entrada (sin price)
+# Pydantic – Features esperadas por el modelo
 # -----------------------------------------------------------
 class HouseFeatures(BaseModel):
     bed: float | None = None
@@ -57,6 +57,7 @@ class HouseFeatures(BaseModel):
     acre_lot: float | None = None
     house_size: float | None = None
 
+    # One-hot states (todas en entrenamiento)
     state_Alabama: int
     state_Alaska: int
     state_Arizona: int
@@ -107,9 +108,6 @@ class HouseFeatures(BaseModel):
     state_West_Virginia: int
     state_Wisconsin: int
     state_Wyoming: int
-
-    price_per_sqft: float | None = None
-    lot_per_sqft: float | None = None
 
 
 # -----------------------------------------------------------
@@ -171,6 +169,29 @@ def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
+# ===========================================================
+#        APLICAMOS LAS MISMAS TRANSFORMACIONES DEL TRAIN
+# ===========================================================
+def apply_clean_transforms(df: pd.DataFrame):
+    numeric_cols = ["bed", "bath", "acre_lot", "house_size"]
+
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    df[numeric_cols] = df[numeric_cols].fillna(0)
+
+    df["acre_lot"] = df["acre_lot"].clip(0, 50)
+    df["house_size"] = df["house_size"].clip(0, 10000)
+
+    # incluir solo columnas de state, las demás ya vienen one-hot
+    state_cols = [c for c in df.columns if c.startswith("state_")]
+
+    for col in state_cols:
+        df[col] = df[col].astype(int)
+
+    return df
+
+
 # -----------------------------------------------------------
 # Endpoint /predict
 # -----------------------------------------------------------
@@ -185,11 +206,17 @@ def predict(features: HouseFeatures, request: Request):
         raise HTTPException(status_code=503, detail="Modelo no disponible")
 
     try:
+        # Convertir en DataFrame
         feature_df = pd.DataFrame([features.dict()])
 
-        # Si tu modelo no usa estas columnas, puedes retirarlas:
+        # Aplicar mismas transformaciones del entrenamiento
+        feature_df = apply_clean_transforms(feature_df)
+
+        # IMPORTANTE: eliminar price_per_sqft y lot_per_sqft (no usadas por el modelo)
         drop_cols = ["price_per_sqft", "lot_per_sqft"]
-        feature_df = feature_df.drop(columns=[c for c in drop_cols if c in feature_df.columns])
+        for c in drop_cols:
+            if c in feature_df.columns:
+                feature_df = feature_df.drop(columns=c)
 
         prediction = model.predict(feature_df)[0]
 
